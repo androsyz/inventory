@@ -1,0 +1,39 @@
+version: '1.0'
+services:
+  inventory:
+    build: .
+    volumes:
+      - .:/usr/src/inventory
+      - ./.env:/app/.env
+    ports:
+      - "${APP_PORT}:3000"
+    depends_on:
+      - postgres-db
+    restart: always
+    networks:
+      - api-network
+
+  postgres-db:
+    image: postgres:9.6
+    container_name: api-db
+    restart: always
+    volumes:
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "${DB_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      DATABASE_HOST: ${DB_HOST}
+    networks:
+      api-network:
+        aliases:
+          - database
+
+volumes:
+  inventory:
+
+networks:
+  api-network:
+    driver: bridge
